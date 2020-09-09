@@ -1,0 +1,92 @@
+Option Explicit
+Public Sub DoToAll()
+Dim ws As Worksheet
+
+For Each ws In Worksheets
+
+'Iam creating headers which will be printed on each worksheet
+ws.Range("I1").Value = "Ticker"
+ws.Range("J1").Value = "Yearly Change"
+ws.Range("K1").Value = "Percent Change"
+ws.Range("L1").Value = "Total Stock Volume"
+
+'Iam declaring variables which will be used on each worksheet
+Dim ticker_symbol As String
+Dim year_change As Double
+Dim percent_change As Double
+Dim total_volume As Double
+Dim lastrow As Long
+Dim row_counter As Long
+Dim ticker_count As Long
+Dim i As Long
+Dim year_open_price As Double
+Dim year_close_price As Double
+Dim percentage As String
+
+'Iam initializing variables here
+total_volume = 0
+row_counter = 2
+
+'I am calculating number of rows in each worksheet
+lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+
+' I am writing If-Then-End-If inside For-Next Loop to populate the ticker symbols in the summary table
+For i = 1 To lastrow Step 1
+If ws.Cells(i, 1).Value <> ws.Cells(i + 1, 1).Value Then
+ws.Cells(row_counter, 9).Value = ws.Cells(i + 1, 1).Value
+row_counter = row_counter + 1
+End If
+Next i
+
+'I am re-initializing row_counter
+row_counter = 2
+
+'I am writing If-Then-End-If inside For-Next Loop to populate total volume for the year in the summary table
+For i = 2 To lastrow Step 1
+total_volume = total_volume + ws.Cells(i, 7).Value
+If ws.Cells(i, 1).Value <> ws.Cells(i + 1, 1) Then
+ws.Cells(row_counter, 12).Value = total_volume
+row_counter = row_counter + 1
+total_volume = 0
+End If
+Next i
+
+'I am re-initializing row_counter
+row_counter = 2
+
+'Iam writing If-Then-End-If inside For-Next Loop to populate yearly change and percentage change in the summary table
+For i = 2 To lastrow Step 1
+
+If ws.Cells(i, 1).Value <> ws.Cells(i - 1, 1) Then
+year_open_price = ws.Cells(i, 3).Value
+End If
+
+If ws.Cells(i, 1).Value <> ws.Cells(i + 1, 1) Then
+year_close_price = ws.Cells(i, 6).Value
+year_change = year_close_price - year_open_price
+ws.Cells(row_counter, 10).Value = year_change
+
+If year_open_price = 0 Then
+ws.Cells(row_counter, 11).Value = "0%"
+
+ElseIf year_open_price > 0 Then
+percent_change = year_change / year_open_price
+percentage = FormatPercent(percent_change, 2)
+ws.Cells(row_counter, 11).Value = percentage
+End If
+
+'I am using formatting to color the cells
+If year_change >= 0 Then
+ws.Cells(row_counter, 10).Interior.ColorIndex = 4
+Else
+ws.Cells(row_counter, 10).Interior.ColorIndex = 3
+End If
+row_counter = row_counter + 1
+End If
+Next i
+
+'Iam adjusting the columns for better presentation
+ws.Columns("I:L").AutoFit
+
+Next ws
+End Sub
