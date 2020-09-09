@@ -1,0 +1,50 @@
+Option Explicit
+Public Sub DoToAll()
+Dim ws As Worksheet
+
+For Each ws In Worksheets
+
+'Iam creating headers which will be printed on each worksheet
+ws.Range("I1").Value = "Ticker"
+ws.Range("J1").Value = "Total Stock Volume"
+
+'Iam declaring variables which will be used on each worksheet
+Dim total_volume As Double
+Dim lastrow As Long
+Dim row_counter As Long
+Dim i As Long
+
+
+'Iam initializing variables here
+total_volume = 0
+row_counter = 2
+
+'I am calculating number of rows in each worksheet
+lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+
+' I am writing If-Then-End-If inside For-Next Loop to populate the ticker symbols in the summary table
+For i = 1 To lastrow Step 1
+If ws.Cells(i, 1).Value <> ws.Cells(i + 1, 1).Value Then
+ws.Cells(row_counter, 9).Value = ws.Cells(i + 1, 1).Value
+row_counter = row_counter + 1
+End If
+Next i
+
+'I am re-initializing row_counter
+row_counter = 2
+
+'I am writing If-Then-End-If inside For-Next Loop to populate total volume for the year in the summary table
+For i = 2 To lastrow Step 1
+total_volume = total_volume + ws.Cells(i, 7).Value
+If ws.Cells(i, 1).Value <> ws.Cells(i + 1, 1) Then
+ws.Cells(row_counter, 10).Value = total_volume
+row_counter = row_counter + 1
+total_volume = 0
+End If
+Next i
+
+'Iam adjusting the columns for better presentation
+ws.Columns("I:J").AutoFit
+
+Next ws
+End Sub
